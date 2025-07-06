@@ -43,4 +43,28 @@ export class FollowService {
   async getRestaurantFollowers(restaurantId: string) {
     return this.followModel.find({ restaurantId }).populate('userId').exec()
   }
+
+  async getRestaurantsFollowedByUsers(userIds: string[]): Promise<Follow[]> {
+    const followedRestaurants = await this.followModel.aggregate([
+      { $match: { userId: { $in: userIds } } },
+      {
+        $lookup: {
+          from: 'restaurants',
+          localField: 'restaurantId',
+          foreignField: '_id',
+          as: 'restaurant',
+        },
+      },
+      { $unwind: '$restaurant' },
+      {
+        $group: {
+          _id: '$restaurant._id',
+          name_en: { $first: '$restaurant.name_en' },
+          cuisines: { $first: '$restaurant.cuisines' },
+        },
+      },
+    ])
+    console.log('followedRestaurants', followedRestaurants)
+    return followedRestaurants
+  }
 }

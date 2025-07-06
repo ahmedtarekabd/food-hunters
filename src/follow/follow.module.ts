@@ -6,9 +6,15 @@ import { Follow, FollowSchema } from './entities/follow.entity'
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Follow.name, schema: FollowSchema }]),
+    MongooseModule.forFeature([
+      {
+        name: Follow.name,
+        schema: FollowSchema,
+      },
+    ]),
   ],
   controllers: [FollowController],
   providers: [FollowService],
+  exports: [FollowService],
 })
 export class FollowModule {}

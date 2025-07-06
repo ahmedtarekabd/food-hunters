@@ -112,4 +112,36 @@ export class UsersController {
       )
     }
   }
+
+  @Get(':id/recommendations')
+  async getUserRecommendations(@Param('id') id: string) {
+    try {
+      // Step 1: Find users with the same favorite cuisine as the input user
+      const usersWithSameCuisine =
+        await this.usersService.getUsersWithSimilarFavoriteCuisines(id)
+      if (!usersWithSameCuisine || usersWithSameCuisine.length === 0) {
+        return {
+          users: [],
+          restaurants: [],
+        }
+      }
+
+      // Step 2: Retrieve restaurants followed by those users
+      const followedRestaurants =
+        await this.followService.getRestaurantsFollowedByUsers(
+          usersWithSameCuisine.map((user) => user._id),
+        )
+
+      // Step 3: Respond with both lists
+      return {
+        users: usersWithSameCuisine,
+        restaurants: followedRestaurants,
+      }
+    } catch (error: any) {
+      throw new InternalServerErrorException(
+        'An error occurred while generating recommendations',
+        error.message,
+      )
+    }
+  }
 }
