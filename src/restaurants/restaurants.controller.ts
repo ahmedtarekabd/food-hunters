@@ -9,6 +9,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   Query,
+  ParseArrayPipe,
 } from '@nestjs/common'
 import { RestaurantsService } from './restaurants.service'
 import { CreateRestaurantDto } from './dto/create-restaurant.dto'
@@ -39,9 +40,15 @@ export class RestaurantsController {
   }
 
   @Get()
-  async findAll(@Query('cuisine') cuisine?: string) {
+  async findAll(
+    @Query(
+      'cuisines',
+      new ParseArrayPipe({ items: String, separator: ',', optional: true }),
+    )
+    cuisines?: string[],
+  ) {
     try {
-      return await this.restaurantsService.findAll(cuisine)
+      return await this.restaurantsService.findAll(cuisines)
     } catch (error: any) {
       // Check for Mongoose error
       if (error.name && error.name === 'ValidationError') {

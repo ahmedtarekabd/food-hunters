@@ -18,10 +18,14 @@ export class RestaurantsService {
     return createdRestaurant
   }
 
-  async findAll(cuisine?: string) {
-    if (cuisine) {
+  async findAll(cuisines?: string[]) {
+    if (cuisines) {
       return await this.restaurantModel
-        .find({ cuisines: cuisine })
+        .find({
+          cuisines: {
+            $in: cuisines.map((cuisine) => cuisine),
+          },
+        })
         .sort({ createdAt: -1 })
     }
     return await this.restaurantModel.find().sort({ createdAt: -1 })
