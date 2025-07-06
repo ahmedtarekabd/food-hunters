@@ -70,10 +70,19 @@ Food Hunters is a sophisticated platform that enables users to discover restaura
 
 ## API Documentation
 
-The API is fully documented using Swagger. After starting the application, you can access the interactive API documentation at:
+The API is fully documented using Swagger & Postman.
+
+After starting the application, you can access the interactive API documentation at:
 
 ```
 http://localhost:3000/api
+```
+
+You can also import the Postman collection from the `postman` directory to explore the API endpoints interactively.
+You can view the API documentation in your browser at:
+
+```
+https://documenter.getpostman.com/view/31783929/2sB34cohyh
 ```
 
 ## Key Endpoints
