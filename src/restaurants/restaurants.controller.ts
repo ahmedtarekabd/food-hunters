@@ -10,14 +10,19 @@ import {
   InternalServerErrorException,
   Query,
   ParseArrayPipe,
+  NotFoundException,
 } from '@nestjs/common'
 import { RestaurantsService } from './restaurants.service'
 import { CreateRestaurantDto } from './dto/create-restaurant.dto'
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto'
+import { FollowService } from 'src/follow/follow.service'
 
 @Controller('restaurants')
 export class RestaurantsController {
-  constructor(private readonly restaurantsService: RestaurantsService) {}
+  constructor(
+    private readonly restaurantsService: RestaurantsService,
+    private readonly followService: FollowService,
+  ) {}
 
   @Post()
   async create(@Body() createRestaurantDto: CreateRestaurantDto) {
@@ -115,7 +120,18 @@ export class RestaurantsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
-      return await this.restaurantsService.remove(id)
+      // Remove the restaurant
+      const result = await this.restaurantsService.remove(id)
+
+      // If the restaurant was not found, throw a NotFoundException
+      if (!result) {
+        throw new NotFoundException(`Restaurant with ID ${id} not found`)
+      }
+
+      // Cascade delete follows
+      await this.followService.removeCascadeRestaurant(id)
+
+      return result
     } catch (error: any) {
       // Check for Mongoose error
       if (error.name && error.name === 'ValidationError') {
