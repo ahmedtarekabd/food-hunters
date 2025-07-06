@@ -15,7 +15,15 @@ export class Restaurant {
   @Prop({ required: true, unique: true })
   slug: string
 
-  @Prop({ type: [String], enum: Cuisines, min: 1, max: 3 })
+  @Prop({
+    type: [String],
+    enum: Cuisines,
+    validate: {
+      validator: (arr: string[]) =>
+        Array.isArray(arr) && arr.length >= 1 && arr.length <= 3,
+      message: 'Cuisines array must have between 1 and 3 items',
+    },
+  })
   cuisines: string[]
 
   @Prop({

@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
+  InternalServerErrorException,
+  Query,
 } from '@nestjs/common'
 import { RestaurantsService } from './restaurants.service'
 import { CreateRestaurantDto } from './dto/create-restaurant.dto'
@@ -16,30 +19,105 @@ export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
   @Post()
-  create(@Body() createRestaurantDto: CreateRestaurantDto) {
-    return this.restaurantsService.create(createRestaurantDto)
+  async create(@Body() createRestaurantDto: CreateRestaurantDto) {
+    try {
+      return await this.restaurantsService.create(createRestaurantDto)
+    } catch (error: any) {
+      // Check for Mongoose error
+      if (error.name && error.name === 'ValidationError') {
+        throw new BadRequestException(`Validation error: ${error.message}`)
+      }
+      // Other Mongoose errors (like duplicate key)
+      if (error.name && error.name === 'MongoError') {
+        throw new BadRequestException(`Database error: ${error.message}`)
+      }
+      // Generic error
+      throw new InternalServerErrorException(
+        `An error occurred while creating the restaurant: ${error.message}`,
+      )
+    }
   }
 
   @Get()
-  findAll(@Param('cuisine') cuisine?: string) {
-    return this.restaurantsService.findAll(cuisine)
+  async findAll(@Query('cuisine') cuisine?: string) {
+    try {
+      return await this.restaurantsService.findAll(cuisine)
+    } catch (error: any) {
+      // Check for Mongoose error
+      if (error.name && error.name === 'ValidationError') {
+        throw new BadRequestException(`Validation error: ${error.message}`)
+      }
+      // Generic error
+      throw new InternalServerErrorException(
+        `An error occurred while fetching restaurants: ${error.message}`,
+      )
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.restaurantsService.findOne(id)
+  async findOne(@Param('id') id: string) {
+    try {
+      return await this.restaurantsService.findOne(id)
+    } catch (error: any) {
+      // Check for Mongoose error
+      if (error.name && error.name === 'ValidationError') {
+        throw new BadRequestException(`Validation error: ${error.message}`)
+      }
+      // Generic error
+      throw new InternalServerErrorException(
+        `An error occurred while fetching the restaurant: ${error.message}`,
+      )
+    }
+  }
+
+  @Get('nearby/:id')
+  async findNearby(@Param('id') id: string) {
+    try {
+      return await this.restaurantsService.findNearby(id)
+    } catch (error: any) {
+      // Check for Mongoose error
+      if (error.name && error.name === 'ValidationError') {
+        throw new BadRequestException(`Validation error: ${error.message}`)
+      }
+      // Generic error
+      throw new InternalServerErrorException(
+        `An error occurred while finding nearby restaurants: ${error.message}`,
+      )
+    }
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateRestaurantDto: UpdateRestaurantDto,
   ) {
-    return this.restaurantsService.update(id, updateRestaurantDto)
+    try {
+      return await this.restaurantsService.update(id, updateRestaurantDto)
+    } catch (error: any) {
+      // Check for Mongoose error
+      if (error.name && error.name === 'ValidationError') {
+        throw new BadRequestException(`Validation error: ${error.message}`)
+      }
+      // Generic error
+      throw new InternalServerErrorException(
+        `An error occurred while updating the restaurant: ${error.message}`,
+      )
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.restaurantsService.remove(id)
+  async remove(@Param('id') id: string) {
+    try {
+      return await this.restaurantsService.remove(id)
+    } catch (error: any) {
+      // Check for Mongoose error
+      if (error.name && error.name === 'ValidationError') {
+        throw new BadRequestException(`Validation error: ${error.message}`)
+      }
+      // Generic error
+      throw new InternalServerErrorException(
+        `An error occurred while deleting the restaurant: ${error.message}`,
+      )
+    }
   }
 }

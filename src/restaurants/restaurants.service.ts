@@ -12,32 +12,61 @@ export class RestaurantsService {
     private readonly restaurantModel: Model<Restaurant>,
   ) {}
 
-  create(createRestaurantDto: CreateRestaurantDto) {
-    const createdRestaurant = this.restaurantModel.create(createRestaurantDto)
+  async create(createRestaurantDto: CreateRestaurantDto) {
+    const createdRestaurant =
+      await this.restaurantModel.create(createRestaurantDto)
     return createdRestaurant
   }
 
-  findAll(cuisine?: string) {
+  async findAll(cuisine?: string) {
     if (cuisine) {
-      return this.restaurantModel
+      return await this.restaurantModel
         .find({ cuisines: cuisine })
         .sort({ createdAt: -1 })
-        .exec()
     }
-    return this.restaurantModel.find().sort({ createdAt: -1 }).exec()
+    return await this.restaurantModel.find().sort({ createdAt: -1 })
   }
 
-  findOne(id: string) {
-    return this.restaurantModel.findById(id)
+  async findOne(id: string) {
+    // First, try to find the restaurant by its slug
+    const restaurant = await this.restaurantModel.findOne({ slug: id })
+    if (restaurant) return restaurant
+
+    // If the restaurant is not found, try to find it by its id
+    return await this.restaurantModel.findById(id)
   }
 
-  update(id: string, updateRestaurantDto: UpdateRestaurantDto) {
-    return this.restaurantModel
-      .findByIdAndUpdate(id, updateRestaurantDto, { new: true })
-      .exec()
+  async findNearby(id: string, maxDistance: number = 1000) {
+    const restaurant = await this.restaurantModel.findById(id)
+    if (!restaurant) {
+      throw new Error('Restaurant not found')
+    }
+
+    return await this.restaurantModel.find({
+      _id: { $ne: id }, // Exclude the restaurant itself
+      location: {
+        $near: {
+          $geometry: restaurant.location,
+          $maxDistance: maxDistance,
+        },
+      },
+    })
   }
 
-  remove(id: string) {
-    return this.restaurantModel.findByIdAndDelete(id).exec()
+  async update(id: string, updateRestaurantDto: UpdateRestaurantDto) {
+    // Ensure the location is in the correct format: { type: 'Point', coordinates: [lng, lat] }
+    if (updateRestaurantDto.location) {
+      // Ensure the location has a type
+      updateRestaurantDto.location.type = 'Point'
+    }
+    return await this.restaurantModel.findByIdAndUpdate(
+      id,
+      updateRestaurantDto,
+      { new: true },
+    )
+  }
+
+  async remove(id: string) {
+    return await this.restaurantModel.findByIdAndDelete(id)
   }
 }
