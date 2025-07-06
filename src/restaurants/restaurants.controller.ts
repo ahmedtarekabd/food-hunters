@@ -20,8 +20,8 @@ export class RestaurantsController {
     return this.restaurantsService.create(createRestaurantDto)
   }
 
-  @Get(':cuisine')
-  findAll(@Param('cuisine') cuisine: string) {
+  @Get()
+  findAll(@Param('cuisine') cuisine?: string) {
     return this.restaurantsService.findAll(cuisine)
   }
 

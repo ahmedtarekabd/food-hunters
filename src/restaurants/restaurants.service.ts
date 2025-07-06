@@ -17,7 +17,7 @@ export class RestaurantsService {
     return createdRestaurant
   }
 
-  findAll(cuisine: string) {
+  findAll(cuisine?: string) {
     if (cuisine) {
       return this.restaurantModel
         .find({ cuisines: cuisine })
